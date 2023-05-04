@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -9,9 +10,9 @@ internal class Program
     {
         // Runtime parameters TODO config or CLI
         var backupDirectory = @"./testdata";
-        var dailySnapshotsToKeep = 30;
-        var weeklySnapshotsToKeep = 10;
-        var monthlySnapshotsToKeep = 24;
+        var dailySnapshotsToKeep = 7;
+        var weeklySnapshotsToKeep = 3;
+        var monthlySnapshotsToKeep = 4;
         var dryRun = true;
 
         //var today = DateTime.Now.Date; // Start from the newest file regardless of today
@@ -19,6 +20,7 @@ internal class Program
         var dailySnapshots = (new DirectoryInfo(backupDirectory)).EnumerateFiles();
         var sortedSnapshots = new SortedDictionary<DateTime, FileInfo>();
         var keeperSnapshots = new SortedDictionary<DateTime, FileInfo>();
+        var deleteSnapshots = new SortedDictionary<DateTime, FileInfo>();
 
         foreach (var singleSnapshot in dailySnapshots)
         {
@@ -26,33 +28,76 @@ internal class Program
             if (m.Success)
             {
                 var snapshotDate = DateTime.ParseExact(m.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                sortedSnapshots.Add(snapshotDate, singleSnapshot);
+                if (!sortedSnapshots.TryAdd(snapshotDate, singleSnapshot))
+                {
+                    // TODO - configurable logic. E.g. pick oldest or newest. 
+                    Console.WriteLine($"Error - duplicate file for date {snapshotDate}. Please manually delete one.");
+                    return;
+                }
             }
         }
 
         // Get the newest snapshot date (last item in the collection)
         var newest = sortedSnapshots.Last().Key;
-        var i = 0;
-        // Keep the daily snapshots
-        while (i < dailySnapshotsToKeep)
+        var daysAgo = 0;
+        
+        // Look at window ranges - 1, 7, or 30 days
+        // Keep the oldest file in each window - so count backwards 
+        var windowSizes = new List<int>();
+        for (int i = 0; i < dailySnapshotsToKeep; i++) windowSizes.Add(1);
+        for (int i = 0; i < weeklySnapshotsToKeep; i++) windowSizes.Add(7);
+        for (int i = 0; i < monthlySnapshotsToKeep; i++) windowSizes.Add(30);
+        foreach (var windowSize in windowSizes)
         {
-            var dayToEvaluate = newest.AddDays(-1 * i);
-            FileInfo? v;
-            var found = sortedSnapshots.TryGetValue(dayToEvaluate, out v);
-            if (found)
+            var foundOne = false;
+            for (int i = windowSize - 1; i >= 0; i--)
             {
-                keeperSnapshots.Add(dayToEvaluate, v!);
-                sortedSnapshots.Remove(dayToEvaluate);
+                var dayToEvaluate = newest.AddDays(-1 * daysAgo - i);
+                // Console.Write(dayToEvaluate.ToLongDateString());
+                if (foundOne)
+                {
+                    FileInfo? toDelete;
+                    if (sortedSnapshots.TryGetValue(dayToEvaluate, out toDelete))
+                    {
+                        deleteSnapshots.Add(dayToEvaluate, toDelete!);
+                        sortedSnapshots.Remove(dayToEvaluate);
+                    }
+                    // Console.WriteLine();
+                    continue;
+                }
+                FileInfo? toKeep;
+                if (sortedSnapshots.TryGetValue(dayToEvaluate, out toKeep))
+                {
+                    keeperSnapshots.Add(dayToEvaluate, toKeep!);
+                    sortedSnapshots.Remove(dayToEvaluate);
+                    foundOne = true;
+                }
+                else
+                {
+                    // Console.WriteLine();
+                }
             }
-            i++;
+            daysAgo += windowSize;
+            // Console.WriteLine();
         }
 
-        // foreach (var sortedKey in sortedSnapshots.Reverse())
-        // {
-        //     Console.WriteLine(sortedKey.Key.ToLongDateString());
-        //     Console.WriteLine(sortedKey.Value.FullName);
-        //     Console.WriteLine();
-        // }
+        Console.WriteLine("Snapshots to keep:");
+        foreach (var toKeep in keeperSnapshots.Reverse())
+        {
+            Console.WriteLine(toKeep.Value.Name);
+        }
+        Console.WriteLine();
+        Console.WriteLine("Snapshots to delete:");
+        foreach (var toDelete in deleteSnapshots.Reverse())
+        {
+            Console.WriteLine(toDelete.Value.Name);
+        }
+
+        if(dryRun)
+        {
+            Console.WriteLine("Dry run. Exiting.");
+            return;
+        }
 
     }
 }
