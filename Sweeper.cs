@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace RollingBackupSweep;
@@ -41,38 +43,50 @@ public static class Sweeper
         // Get the newest snapshot date (last item in the collection)
         var newest = foundSnapshots.Last().Key;
         Console.WriteLine($"Today is {newest}");
-        var daysAgo = 0;
+        var windowOldest = newest;
+        var dayToEvaluate = newest;
+        var windowMostRecent = newest;
 
+        // Now that we've found the files, run the algorithm. 
+        /*  
+            Assume keep 1 day, keep 1 week, keep 1 month. 
+            Today is 2023-05-04. Keep 1 of 1 day. 
+            Look back 2023-05-03 to 2023-04-27. Keep 4/27.
+            Look back 2023-04-26 to 2023-03-30. (using 28 days for month). Keep 3/30
+        */
         // Look at window ranges - 1, 7, or 30 days
         // Keep the oldest file in each window - so count backwards 
         var windowSizes = new WindowSizer(
             new SingleWindow(1, dailySnapshotsToKeep),
             new SingleWindow(7, weeklySnapshotsToKeep),
-            new SingleWindow(30, monthlySnapshotsToKeep)
+            new SingleWindow(28, monthlySnapshotsToKeep)
         ).Windows;
 
         foreach (var windowSize in windowSizes)
         {
-            daysAgo += windowSize;
+            windowOldest = dayToEvaluate.AddDays(-1 * (windowSize - 1));
+            windowMostRecent = dayToEvaluate;
+            Console.WriteLine($"Window {windowSize} " + windowOldest.ToString("yyyy-MM-dd")
+                + " to " + windowMostRecent.ToString("yyyy-MM-dd"));
+            //dayToEvaluate = windowOldest;
 
             var foundOne = false;
-            for (int i = windowSize; i > 0; i--)
+            for (int i = 0; i < windowSize; i++)
             {
-                var dayToEvaluate = newest.AddDays(-1 * daysAgo + i);
-                // Console.Write(dayToEvaluate.ToLongDateString());
+                dayToEvaluate = windowOldest.AddDays(i);
                 if (foundOne)
                 {
                     FileInfo? toDelete;
                     if (foundSnapshots.TryGetValue(dayToEvaluate, out toDelete))
                     {
-                        Console.WriteLine($"DELE WINDOW SIZE {windowSize}: {dayToEvaluate}");
+                        // Console.WriteLine($"DELE WINDOW SIZE {windowSize}: {dayToEvaluate.ToString("yyyy-MM-dd")}");
                     }
                     continue;
                 }
                 FileInfo? toKeep;
                 if (foundSnapshots.TryGetValue(dayToEvaluate, out toKeep))
                 {
-                    Console.WriteLine($"keep window size {windowSize}: {dayToEvaluate}");
+                    Console.WriteLine($"keep window size {windowSize}: {dayToEvaluate.ToString("yyyy-MM-dd")}");
                     keeperSnapshots.Add(dayToEvaluate, toKeep!);
                     foundSnapshots.Remove(dayToEvaluate);
                     foundOne = true;
@@ -82,20 +96,10 @@ public static class Sweeper
                     // Console.WriteLine();
                 }
             }
-            // Console.WriteLine();
-        }
 
-        // Console.WriteLine("Snapshots to keep:");
-        // foreach (var toKeep in keeperSnapshots.Reverse())
-        // {
-        //     Console.WriteLine(toKeep.Value.Name);
-        // }
-        // Console.WriteLine();
-        // Console.WriteLine("Snapshots to delete:");
-        // foreach (var toDelete in foundSnapshots.Reverse())
-        // {
-        //     Console.WriteLine(toDelete.Value.Name);
-        // }
+            // Done with this window, advance (older) to the next window
+            dayToEvaluate = windowOldest.AddDays(-1);
+        }
 
         if (dryRun)
         {
