@@ -1,12 +1,18 @@
-﻿internal class Generate
+﻿namespace RollingBackupSweep; 
+
+internal static class Generate
 {
-    public static void TestData()
+    public static void BaselineTestData(DateTime today)
     {
-        var today = DateTime.Now.Date;
-        for (int i = 0; i > -400; i--)
+        for (int i = 0; i < 400; i++)
         {
-            var dateString = today.AddDays(i).ToString("yyyy-MM-dd");
-            File.Create($"testdata/myfile-{dateString}-snapshot.bak").Close();
+            Generate.SingleDay(today.AddDays(-1 * i));
         }
+    }
+
+    public static void SingleDay(DateTime forDate)
+    {
+        var dateString = forDate.ToString("yyyy-MM-dd");
+        File.Create($"testdata/myfile-{dateString}-snapshot.bak").Close();
     }
 }
