@@ -1,6 +1,6 @@
 
 namespace RollingBackupSweep {
-    public record SingleWindow(int WindowSize, int Repeats);
+    public record SingleWindow(int WindowSizeDays, int Repeats);
 
     /// <summary>
     /// Flatten a Window Expression (sequence of SingleWindows)
@@ -16,7 +16,7 @@ namespace RollingBackupSweep {
             {
                 for (int i = 0; i < window.Repeats; i++)
                 {
-                    this.Windows.Add(window.WindowSize);
+                    this.Windows.Add(window.WindowSizeDays);
                 }
             }
         }
