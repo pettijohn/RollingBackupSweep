@@ -1,4 +1,5 @@
 using Microsoft.VisualBasic.FileIO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace RollingBackupSweep;
 
@@ -6,10 +7,25 @@ namespace RollingBackupSweep;
 public class TestRollingSweep
 {
     [TestMethod]
+    [Ignore]
+    public void GenerateRealFiles()
+    {
+        new DirectoryInfo("test-data").Create();
+        for (int i = 0; i < 400; i++)
+        {
+            var today = DateTime.Today;
+            var forDate = today.AddDays(-1 * i);
+            var dateString = forDate.ToString("yyyy-MM-dd");
+            File.Create($"test-data/test-service-{dateString}-snapshot.bak").Close();
+        }
+    }
+
+
+    [TestMethod]
     public void TestCoreLogic()
     {
         var today = new DateTime(2023,05,01).Date;
-        var dirLister = new DirectoryLister("", false);
+        var dirLister = new DirectoryLister(new DirectoryInfo(""), false);
         
         // so I don't have to ! everywhere else down the line 
         if(dirLister.MockFileList == null) 
@@ -21,7 +37,7 @@ public class TestRollingSweep
 
         var p = new SweepParams
         {
-            BackupDirectory = "",
+            BackupPath = new DirectoryInfo(""),
             DailySnapshotsToKeep = 7,
             WeeklySnapshotsToKeep = 3,
             MonthlySnapshotsToKeep = 4,
@@ -187,7 +203,7 @@ public class TestRollingSweep
     public void DuplicateFilesForDay()
     {
         var today = new DateTime(2023, 05, 01).Date;
-        var dirLister = new DirectoryLister("", false);
+        var dirLister = new DirectoryLister(new DirectoryInfo(""), false);
 
         // so I don't have to ! everywhere else down the line 
         if (dirLister.MockFileList == null)
@@ -199,7 +215,7 @@ public class TestRollingSweep
 
         var p = new SweepParams
         {
-            BackupDirectory = "",
+            BackupPath = new DirectoryInfo(""),
             DailySnapshotsToKeep = 7,
             WeeklySnapshotsToKeep = 3,
             MonthlySnapshotsToKeep = 4,

@@ -3,7 +3,7 @@
 
 public class DirectoryLister
 {
-    public DirectoryLister(string directory, bool concrete = true)
+    public DirectoryLister(DirectoryInfo directory, bool concrete = true)
     {
         Concrete = concrete;
         Directory = directory;
@@ -11,13 +11,13 @@ public class DirectoryLister
             MockFileList = new List<IFileInfo>();
     }
     public bool Concrete { get; init; }
-    public string Directory { get; init; }
+    public DirectoryInfo Directory { get; init; }
     public List<IFileInfo>? MockFileList { get; init;}
 
     public IEnumerable<IFileInfo> EnumerateFiles()
     {
         if(Concrete)
-            return new DirectoryInfo(Directory).EnumerateFiles().Select(f => new ConcreteFileInfo(f));
+            return Directory.EnumerateFiles().Select(f => new ConcreteFileInfo(f));
         else
             return MockFileList!; //will always have value if Concrete is false
     }

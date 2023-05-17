@@ -14,7 +14,5 @@ internal static class Generate
     {
         var dateString = forDate.ToString("yyyy-MM-dd");
         directory.Add(new MockFileInfo($"test-service-{dateString}-snapshot.bak", directory));
-
-        // File.Create($"test-data/test-service-{dateString}-snapshot.bak").Close();
     }
 }
