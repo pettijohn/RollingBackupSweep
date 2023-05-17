@@ -1,6 +1,8 @@
 # RollingBackupSweep
 Identify old daily backup snapshops and slowly delete older snapshots. Keep *n* daily, weekly (7 day windows), and monthly (28 days) snapshots.
 
+Uses .NET Native AOT to turn C# into tidy (~7MB) standalone native binaries (no .NET runtime required). Slip it into your backup container image!
+
 ## Requirements
 Backup snapshots must contain yyyy-MM-dd in the filename (year-month-day); the utility does not look at file create date because some cloud hosts always set create date as the upload date, not the original file date (e.g. [S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html)), which could result in data loss. 
 
