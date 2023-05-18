@@ -4,7 +4,7 @@ Identify old daily backup snapshops and slowly delete older snapshots. Keep *n* 
 Uses .NET Native AOT to turn C# into tidy (~7MB) standalone native binaries (no .NET runtime required). Slip it into your backup container image!
 
 ## Requirements
-Backup snapshots must contain yyyy-MM-dd in the filename (year-month-day); the utility does not look at file create date because some file systems change the file times (e.g. [S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html) always uses upload date), which could result in data loss. If you need to rename files in bulk, try (rename)[https://man7.org/linux/man-pages/man1/rename.1.html]. E.g. I had files without dashes in the date string and renamed with `rename -n -v -e 's/^(.*)(\d{4})(\d{2})(\d{2})-(.*)/$1$2-$3-$4-T$5/' *.*` (-n is for dry-run). 
+Backup snapshots must contain yyyy-MM-dd in the filename (year-month-day); the utility does not look at file create date because some file systems change the file times (e.g. [S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html) always uses upload date), which could result in data loss. If you need to rename files in bulk, try [rename](https://man7.org/linux/man-pages/man1/rename.1.html). E.g. I had files without dashes in the date string and renamed with `rename -n -v -e 's/^(.*)(\d{4})(\d{2})(\d{2})-(.*)/$1$2-$3-$4-T$5/' *.*` (-n is for dry-run). 
 
 
 ## How it Works
