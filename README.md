@@ -46,6 +46,6 @@ Options:
 Be sure to change the version number and platform. Be sure to include `-L` to follow redirects, as github requires. You can also change the unzip location with `-C`.
 
 ```
-RUN curl -L -O https://github.com/pettijohn/RollingBackupSweep/releases/download/v0.9.1/RollingBackupSweep-linux-arm64.tar.gz \
-    && tar zxf RollingBackupSweep-linux-arm64.tar.gz -C /usr/bin/
+RUN VERSION="v0.9.2" && curl -L -O https://github.com/pettijohn/RollingBackupSweep/releases/download/v0.9.1/RollingBackupSweep-$VERSION-linux-arm64.tar.gz \
+    && tar zxf RollingBackupSweep-$VERSION-linux-arm64.tar.gz -C /usr/bin/ && rm RollingBackupSweep-$VERSION-linux-arm64.tar.gz
 ```
