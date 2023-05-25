@@ -95,34 +95,34 @@ public class Sweeper
         {
             windowOldest = dayToEvaluate.AddDays(-1 * (windowSize - 1));
             windowMostRecent = dayToEvaluate;
-            Log($"Window {windowSize} " + windowOldest.ToString("yyyy-MM-dd")
-                + " to " + windowMostRecent.ToString("yyyy-MM-dd"));
-            //dayToEvaluate = windowOldest;
+            Log($"\n» Window {windowSize} " + windowOldest.ToString("yyyy-MM-dd")
+                + " to " + windowMostRecent.ToString("yyyy-MM-dd") + "\n");
 
             var foundOne = false;
             for (int i = 0; i < windowSize; i++)
             {
                 dayToEvaluate = windowOldest.AddDays(i);
+                Log($"? Evaluating {dayToEvaluate.ToString("yyyy-MM-dd")}\n");
                 if (foundOne)
                 {
                     IFileInfo? toDelete;
                     if (foundSnapshots.TryGetValue(dayToEvaluate, out toDelete))
                     {
-                        Log($"DELE WINDOW SIZE {windowSize}: {dayToEvaluate.ToString("yyyy-MM-dd")}");
+                        Log($"! Deleting {dayToEvaluate.ToString("yyyy-MM-dd")}\n");
                     }
                     continue;
                 }
                 IFileInfo? toKeep;
                 if (foundSnapshots.TryGetValue(dayToEvaluate, out toKeep))
                 {
-                    Log($"keep window size {windowSize}: {dayToEvaluate.ToString("yyyy-MM-dd")}");
+                    Log($"+ Keeping {dayToEvaluate.ToString("yyyy-MM-dd")}\n");
                     keeperSnapshots.Add(dayToEvaluate, toKeep!);
                     foundSnapshots.Remove(dayToEvaluate);
                     foundOne = true;
                 }
                 else
                 {
-                    // pass
+                    //pass 
                 }
             }
 
@@ -140,6 +140,12 @@ public class Sweeper
             foreach (var fileToDelete in foundSnapshots)
             {
                 fileToDelete.Value.Delete();
+                // Log($"Deleting {fileToDelete.Value.Name}");
+
+            }
+            foreach(var fileToKeep in keeperSnapshots)
+            {
+                // Log($"Keeping  {fileToKeep.Value.Name}");
             }
             return 0;
         }
