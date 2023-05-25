@@ -11,6 +11,9 @@ $yesno = Read-Host -Prompt "Did you build linux first? Tag git, push all; create
 if ($yesno -ieq 'y') {
     git tag $version
     git push --all
+    git push --tags
     gh release create $version 
-    gh release upload $version RollingBackupSweep-${version}-linux-arm64.tar RollingBackupSweep-${version}-linux-amd64.tar RollingBackupSweep-${version}-win-x64.tar RollingBackupSweep-${version}-win-x64.tar
+    pushd publish
+    gh release upload $version RollingBackupSweep-${version}-linux-arm64.tar.gz RollingBackupSweep-${version}-linux-x64.tar.gz RollingBackupSweep-${version}-win-arm64.zip RollingBackupSweep-${version}-win-x64.zip
+    popd 
 }
