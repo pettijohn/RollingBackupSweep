@@ -24,9 +24,9 @@ dotnet publish src -r win-arm64 -c Release -o publish &&
 
 $yesno = Read-Host -Prompt "Tag git, push all, push tags; create ${version} at github and upload? [Y/N]"
 if ($yesno -ieq 'y') {
-    git tag $version
+    git tag $version --force
     git push --all
-    git push --tags
+    git push --tags --force 
     gh release create $version 
     pushd publish
     gh release upload $version RollingBackupSweep-${version}-linux-arm64.tar.gz RollingBackupSweep-${version}-linux-x64.tar.gz RollingBackupSweep-${version}-win-arm64.zip RollingBackupSweep-${version}-win-x64.zip
