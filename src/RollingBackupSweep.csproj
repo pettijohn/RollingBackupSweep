@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <StripSymbols>true</StripSymbols>
-    <Version>0.9.3</Version>
+    <Version>0.9.4</Version>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
   <ItemGroup>

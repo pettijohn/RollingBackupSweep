@@ -24,21 +24,22 @@ A great example use case something encrypted with a password that you forget - y
 
 ```
 Description:
-  Sweep backup snapshots with yyyy-MM-dd in the filename, retaining the specified number of daily, weekly, and monthly
-  snapshots.
+  Sweep backup snapshots with yyyy-MM-dd in the filename, retaining the specified number of daily, weekly, and
+  monthly snapshots.
 
 Usage:
   RollingBackupSweep [options]
 
 Options:
-  --path <path> (REQUIRED)      Path to sweep of backup snapshots.
-  --days <days> (REQUIRED)      Number of daily backup snapshots to retain.
-  --weeks <weeks> (REQUIRED)    Number of weekly backup snapshots to retain.
-  --months <months> (REQUIRED)  Number of monthly backup snapshots to retain.
-  --dry-run                     Dry run; don't delete anything.
-  --verbose                     Verbose output.
-  --version                     Show version information
-  -?, -h, --help                Show help and usage information
+  --path <path> (REQUIRED)                                Path to sweep of backup snapshots.
+  --days <days> (REQUIRED)                                Number of daily backup snapshots to retain.
+  --weeks <weeks> (REQUIRED)                              Number of weekly backup snapshots to retain.
+  --months <months> (REQUIRED)                            Number of monthly backup snapshots to retain.
+  --dry-run                                               Dry run; don't delete anything.
+  --verbosity <Detailed|Diagnostic|Minimal|Normal|Quiet>  Output detail level. [default: Normal]
+  --verbose                                               Verbose output. Equivalent to --verbosity Diagnostic.
+  --version                                               Show version information
+  -?, -h, --help                                          Show help and usage information
 ```
 
 ## Include in Docker Image
@@ -46,7 +47,7 @@ Options:
 Be sure to change the version number and platform. Be sure to include `-L` to follow redirects, as github requires. You can also change the unzip location with `-C`.
 
 ```
-RUN VERSION="v0.9.2" && curl -L -O https://github.com/pettijohn/RollingBackupSweep/releases/download/$VERSION/RollingBackupSweep-$VERSION-linux-arm64.tar.gz \
+RUN VERSION="v0.9.4" && curl -L -O https://github.com/pettijohn/RollingBackupSweep/releases/download/$VERSION/RollingBackupSweep-$VERSION-linux-arm64.tar.gz \
     && tar zxf RollingBackupSweep-$VERSION-linux-arm64.tar.gz -C /usr/bin/ \
     && rm RollingBackupSweep-$VERSION-linux-arm64.tar.gz
 ```

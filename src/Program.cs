@@ -1,6 +1,16 @@
 ﻿using System.CommandLine;
+using System.Net.Quic;
 
 namespace RollingBackupSweep; 
+
+public enum VerbosityOptions
+{
+    Quiet = 1,
+    Minimal = 2,
+    Normal = 3,
+    Detailed = 4,
+    Diagnostic = 5
+}
 
 internal class Program
 {
@@ -13,7 +23,9 @@ internal class Program
         var weeksOption = new Option<int>(name: "--weeks", description: "Number of weekly backup snapshots to retain.") { IsRequired = true };
         var monthsOption = new Option<int>(name: "--months", description: "Number of monthly backup snapshots to retain.") { IsRequired = true };
         var dryRunOption = new Option<bool>(name: "--dry-run", description: "Dry run; don't delete anything.");
-        var verboseOption = new Option<bool>(name: "--verbose", description: "Verbose output.");
+        var verbosityOption = new Option<VerbosityOptions>(name: "--verbosity", description: "Output detail level.");
+        verbosityOption.SetDefaultValue(VerbosityOptions.Normal);
+        var verboseOption = new Option<bool>(name: "--verbose", description: "Verbose output. Equivalent to --verbosity Diagnostic.");
 
 
         var rootCommand = new RootCommand("Sweep backup snapshots with yyyy-MM-dd in the filename, retaining the specified number of daily, weekly, and monthly snapshots.");
@@ -22,9 +34,10 @@ internal class Program
         rootCommand.AddOption(weeksOption);
         rootCommand.AddOption(monthsOption);
         rootCommand.AddOption(dryRunOption);
+        rootCommand.AddOption(verbosityOption);
         rootCommand.AddOption(verboseOption);
 
-        rootCommand.SetHandler<DirectoryInfo, int, int, int, bool, bool>((path, days, weeks, months, dryRun, verbose) => 
+        rootCommand.SetHandler<DirectoryInfo, int, int, int, bool, VerbosityOptions, bool>((path, days, weeks, months, dryRun, verbosityOption, verbose) => 
         {
             if(path == null || !path.Exists)
             {
@@ -38,30 +51,12 @@ internal class Program
                 WeeklySnapshotsToKeep = weeks,
                 MonthlySnapshotsToKeep = months,
                 DryRun = dryRun,
-                Verbose = verbose
+                Verbosity = verbose ? VerbosityOptions.Diagnostic : verbosityOption
         };
             new Sweeper(sweepParams).Sweep();
         }, 
-        pathOption, daysOption, weeksOption, monthsOption, dryRunOption, verboseOption);
+        pathOption, daysOption, weeksOption, monthsOption, dryRunOption, verbosityOption, verboseOption);
 
         return rootCommand.Invoke(args);
-
-        // .WithParsed(RunOptions)
-        // .WithNotParsed(HandleParseError);
-
-        //var sweepParams = result.Value;
-        // sweepParams.BackupDirectory = Environment.GetEnvironmentVariable("RBS_PATH") ?? throw new MissingFieldException("Must provide path");
-        // if(!Int32.TryParse(Environment.GetEnvironmentVariable("RBS_KEEPDAILY"), out sweepParams.DailySnapshotsToKeep)) throw new MissingFieldException("Must provide daily");
-        // if(!Int32.TryParse(Environment.GetEnvironmentVariable("RBS_KEEPWEEKLY"), out sweepParams.WeeklySnapshotsToKeep)) throw new MissingFieldException("Must provide weekly");
-        // if(!Int32.TryParse(Environment.GetEnvironmentVariable("RBS_KEEPMONTHLY"), out sweepParams.MonthlySnapshotsToKeep)) throw new MissingFieldException("Must provide monthly");
-        // if(!Boolean.TryParse(Environment.GetEnvironmentVariable("RBS_DRYRUN"), out sweepParams.DryRun)) throw new MissingFieldException("Must provide dryrun");
-        
-        // var d = new DirectoryInfo(sweepParams.BackupPath);
-        // if(!d.Exists)
-        // {
-        //     Console.WriteLine($"Error - directory {sweepParams.BackupPath} does not exist.");
-        // }
-            
-        // new Sweeper(sweepParams).Sweep();
     }
 }

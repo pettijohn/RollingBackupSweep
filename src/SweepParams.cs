@@ -1,4 +1,6 @@
 
+using RollingBackupSweep;
+
 public class SweepParams
 {
     public DirectoryInfo BackupPath { get; set; }
@@ -10,5 +12,5 @@ public class SweepParams
     public int MonthlySnapshotsToKeep{ get; set; } = Int32.MaxValue;
     
     public bool DryRun { get; set; }
-    public bool Verbose { get; set; }
+    public VerbosityOptions Verbosity { get; set; }
 }
