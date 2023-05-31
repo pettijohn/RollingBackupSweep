@@ -75,6 +75,9 @@ public class Sweeper
         // Get the newest snapshot date (last item in the collection)
         var newest = foundSnapshots.Last().Key;
         Log(VerbosityOptions.Detailed, $"= Today is {newest.ToString("yyyy-MM-dd")}");
+        var daysAgo = DateTime.UtcNow.Subtract(newest);
+        if(daysAgo > TimeSpan.FromDays(2))
+            Log(VerbosityOptions.Minimal, $"= Warning: newest is {newest.ToString("yyyy-MM-dd")}, {daysAgo.TotalDays:f3} days ago");
         var windowOldest = newest;
         var dayToEvaluate = newest;
         var windowMostRecent = newest;
@@ -111,14 +114,14 @@ public class Sweeper
                     IFileInfo? toDelete;
                     if (foundSnapshots.TryGetValue(dayToEvaluate, out toDelete))
                     {
-                        Log(VerbosityOptions.Normal, $"! Deleting {dayToEvaluate.ToString("yyyy-MM-dd")}");
+                        Log(VerbosityOptions.Normal, $"! Deleting {toDelete.Name}");
                     }
                     continue;
                 }
                 IFileInfo? toKeep;
                 if (foundSnapshots.TryGetValue(dayToEvaluate, out toKeep))
                 {
-                    Log(VerbosityOptions.Detailed, $"+ Keeping {dayToEvaluate.ToString("yyyy-MM-dd")}");
+                    Log(VerbosityOptions.Detailed, $"+ Keeping {toKeep.Name}");
                     keeperSnapshots.Add(dayToEvaluate, toKeep!);
                     foundSnapshots.Remove(dayToEvaluate);
                     foundOne = true;
